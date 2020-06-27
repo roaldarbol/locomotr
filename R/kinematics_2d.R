@@ -13,6 +13,8 @@ kinematics_2d <- function(filter='butter'){
   #segments = c('Head', 'Shoulder', 'Ankle', 'Knee', 'Hip')
   #joints = c("Ankle", "Knee", "Hip")
 
+  require(dplyr)
+
   df <- as.data.frame(lapply(Sys.glob("data/*.xlsx"), readxl::read_excel))
   setup <- yaml::yaml.load_file('data/setup.yaml')
 
