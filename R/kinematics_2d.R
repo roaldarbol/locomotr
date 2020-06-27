@@ -7,12 +7,11 @@
 #' @param path Path to input folder
 #' @param joints List of joints to be analyzed (begin with capital letter).
 #' @export
+#' @import dplyr
 kinematics_2d <- function(filter='butter'){
   #path = "/Users/roaldarbol/Library/Mobile Documents/com~apple~CloudDocs/Documents/SportsMechanics/Jannick/practice"
   #segments = c('Head', 'Shoulder', 'Ankle', 'Knee', 'Hip')
   #joints = c("Ankle", "Knee", "Hip")
-
-  require(dplyr)
 
   df <- as.data.frame(lapply(Sys.glob("data/*.xlsx"), readxl::read_excel))
   setup <- yaml::yaml.load_file('data/setup.yaml')

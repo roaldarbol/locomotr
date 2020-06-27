@@ -4,7 +4,7 @@
 \alias{kinematics_2d}
 \title{Kinematics}
 \usage{
-kinematics_2d()
+kinematics_2d(filter = "butter")
 }
 \arguments{
 \item{path}{Path to input folder}
