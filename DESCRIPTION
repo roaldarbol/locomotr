@@ -1,0 +1,14 @@
+Package: biomechanics
+Title: Package for sports-specific biomechanical analysis
+Version: 0.0.1
+Authors@R: 
+    person(given = "Mikkel",
+           family = "Roald-Arbøl",
+           role = c("aut", "cre"),
+           email = "mikkel_roald@hotmail.com",
+           comment = c(ORCID = "YOUR-ORCID-ID"))
+Description: What the package does (one paragraph).
+License: What license it uses
+Encoding: UTF-8
+LazyData: true
+RoxygenNote: 7.1.0.9000
