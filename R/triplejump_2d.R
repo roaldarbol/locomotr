@@ -5,6 +5,7 @@
 #' @param path Path to input folder
 #' @param joints List of joints to be analyzed (begin with capital letter).
 #' @export
+#' @import dplyr
 triplejump_2d <- function(path = NULL, filter='butter'){
 
   if (!is.null(path)){

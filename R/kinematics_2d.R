@@ -7,7 +7,9 @@
 #' @param path Path to input folder
 #' @param joints List of joints to be analyzed (begin with capital letter).
 #' @export
-#' @import dplyr data.table signal ggplot2 plotly readxl reshape2 yaml zoo
+#' @import signal dplyr ggplot2 plotly readxl reshape2 yaml zoo
+#' @importFrom data.table 'as.data.table'
+#' @importFrom dplyr 'filter'
 kinematics_2d <- function(filter='butter'){
   #path = "/Users/roaldarbol/Library/Mobile Documents/com~apple~CloudDocs/Documents/SportsMechanics/Jannick/practice"
   #segments = c('Head', 'Shoulder', 'Ankle', 'Knee', 'Hip')
