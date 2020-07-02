@@ -1,6 +1,10 @@
-library(dplyr)
-library(ggplot2)
-library(plotly)
+#' Rad2Deg
+#'
+#' Changes between radians and degrees
+#' @export
+#' @import ggplot2
+#' @importFrom plotly 'ggplotly'
+
 kin_animate <- function(df){
 # df <- res[[3]]
 df$t <- specify_decimal(df$t, 3)

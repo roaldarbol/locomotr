@@ -7,26 +7,32 @@
 #' @param path Path to input folder
 #' @param joints List of joints to be analyzed (begin with capital letter).
 #' @export
-#' @import signal dplyr ggplot2 plotly readxl reshape2 yaml zoo
+#' @import reshape2 dplyr
+#' @importFrom yaml 'yaml.load_file'
+#' @importFrom readxl 'read_excel'
 #' @importFrom data.table 'as.data.table'
-#' @importFrom dplyr 'filter'
+#' @importFrom zoo 'na.locf' 'na.spline'
+#' @importFrom signal 'butter' 'filtfilt'
 kinematics_2d <- function(filter='butter'){
   #path = "/Users/roaldarbol/Library/Mobile Documents/com~apple~CloudDocs/Documents/SportsMechanics/Jannick/practice"
   #segments = c('Head', 'Shoulder', 'Ankle', 'Knee', 'Hip')
   #joints = c("Ankle", "Knee", "Hip")
 
   df <- as.data.frame(lapply(Sys.glob("data/*.xlsx"), readxl::read_excel))
-  setup <- yaml::yaml.load_file('data/setup.yaml')
+  setup <- yaml::yaml.load_file(Sys.glob('data/setup*.yaml'))
+
+  for (i in 1:ncol(df)){
+    if (!all(is.na(df[,i]))){
+      min <- min(which(!is.na(df[,i])))
+      max <- max(which(!is.na(df[,i])))
+      df[min:max,i] <- zoo::na.spline(df[min:max,i], na.rm=TRUE)
+    }
+  }
 
   # Logical matrix & approximations ----
   matrixNA <- is.na(df)
 
   if(filter=='none'){
-    for (i in 1:ncol(df)){
-      min <- min(which(!is.na(df[,i])))
-      max <- max(which(!is.na(df[,i])))
-      df[min:max,i] <- zoo::na.spline(df[min:max,i], na.rm=TRUE)
-    }
     df.filter <- df
 
   }else if (filter=='butter'){
@@ -34,73 +40,97 @@ kinematics_2d <- function(filter='butter'){
     Fn <- Fs/2
     Ws <- (1.4845+0.1532*sqrt(Fs))^2  # Yu, 1988
     Wc <- round(1000*Ws/Fn)/1000
+    df.filter <- data.frame()
 
-  pad <- 20
-  extra <- data.frame(matrix(nrow=pad, ncol=ncol(df)))
-  colnames(extra) <- colnames(df)
-  df <- rbind(extra,df,extra)
-  for (i in 1:pad){
-    df$t[i] <- df$t[pad+1]-((pad+1-i)/Fs)
-    times <- nrow(df)-pad
-    df$t[times+i] <- df$t[times]+(i/Fs)
-  }
-  for (i in 2:ncol(df)){
-    min <- min(which(!is.na(df[,i])))
-    max <- max(which(!is.na(df[,i])))
-    df[(min-pad):min,i] <- zoo::na.locf(df[(min-pad):min,i])
-    df[max:(max+pad),i] <- zoo::na.locf(df[max:(max+pad),i])
-  }
+    # pad <- 40
+    # extra <- data.frame(matrix(nrow=pad, ncol=ncol(df)))
+    # colnames(extra) <- colnames(df)
+    # df <- rbind(extra,df,extra)
+    #
+    # for (i in 1:pad){
+    #   df$t[i] <- df$t[pad+1]-((pad+1-i)/Fs)
+    #   times <- nrow(df)-pad
+    #   df$t[times+i] <- df$t[times]+(i/Fs)
+    # }
+    # for (i in 2:ncol(df)){
+    #   max <- max(which(!is.na(df[,i])))
+    #   df[max:(max+pad),i] <- zoo::na.locf(df[max:(max+pad),i])
+    # }
 
-  for (i in 1:ncol(df)){
-    min <- min(which(!is.na(df[,i])))
-    max <- max(which(!is.na(df[,i])))
-    df[min:max,i] <- zoo::na.spline(df[min:max,i], na.rm=TRUE)
-  }
+    time <- sort(c(setup$phase$touchdown, setup$phase$takeoff, df$t[1]))
 
-  # Butterworth filtering ----
-  # Fs <- 120
-  # Ny
-  # lwpass <- signal::buttord(5/(Fs/2), 30/(Fs/2), 1, 1)
-   #Use buttord() to find parametres
-  df.xy <- list()
-  df.xy[['x']] <- df[,grep('x', names(df))]
-  df.xy[['y']] <- df[,grep('y', names(df))]
-  df.filter.list <- list()
-  df.filter.list[['x']] <- as.data.frame(df[,'t'])
-  df.filter.list[['y']] <- as.data.frame(df[,'t'])
-  colnames(df.filter.list[['x']])[1] <- colnames(df)[1]
-  colnames(df.filter.list[['y']])[1] <- colnames(df)[1]
+    for (k in 1:(length(time)-2)){
+      df.temp <- data.table(df)
+      df.temp <- df.temp[t %inrange% c(time[k], time[k+1])]
+      df.temp <- data.frame(df.temp)
+      df.pre <- -df.temp[seq(dim(df.temp)[1],1),]
+      df.pre$t <- seq(to=df.temp$t[1], length.out = nrow(df.pre), by=1/Fs)
+      for (j in 2:ncol(df.temp)){
+        diff <- df.pre[nrow(df.pre),j]-df.temp[1,j]
+        df.pre[,j] <- df.pre[,j]-diff
+      }
+      df.pre <- df.pre[-nrow(df.pre),]
+
+      df.post <- -df.temp[seq(dim(df.temp)[1],1),]
+      df.post$t <- seq(from=df.temp$t[nrow(df.temp)], length.out = nrow(df.post), by=1/Fs)
+      for (j in 2:ncol(df.temp)){
+        diff <- df.post[1,j]-df.temp[nrow(df.temp),j]
+        df.post[,j] <- df.post[,j]-diff
+      }
+      df.post <- df.post[-1,]
+      df.temp <- rbind(df.pre, df.temp, df.post)
+      df.temp <- df.temp[-1,]
+
+      # for (i in 1:ncol(df.temp)){
+      #   if (!all(is.na(df.temp[,i]))){
+      #     min <- min(which(!is.na(df.temp[,i])))
+      #     max <- max(which(!is.na(df.temp[,i])))
+      #     df.temp[min:max,i] <- zoo::na.spline(df.temp[min:max,i], na.rm=TRUE)
+      #   }
+      # }
+
+      # Butterworth filtering ----
+      df.xy <- list()
+      df.xy[['x']] <- df.temp[,grep('x', names(df.temp))]
+      df.xy[['y']] <- df.temp[,grep('y', names(df.temp))]
+      df.filter.list <- list()
+      df.filter.list[['x']] <- as.data.frame(df.temp[,'t'])
+      df.filter.list[['y']] <- as.data.frame(df.temp[,'t'])
+      colnames(df.filter.list[['x']])[1] <- colnames(df.temp)[1]
+      colnames(df.filter.list[['y']])[1] <- colnames(df.temp)[1]
 
 
-for (i in 1:length(df.xy)){
-  if (names(df.xy[i]) == 'x'){
-    b <- signal::butter(2, Wc, type = "low", plane='z')
-  } else if(names(df.xy[i]) == 'y'){
-    b <- signal::butter(2, Wc, type = "low", plane='z')
-  }
-  for (j in 1:ncol(df.xy[[i]])){
-    min <- min(which(!is.na(df.xy[[i]][,j]))+1)   #If a new filter is needed pr. segment, put code here
-    max <- max(which(!is.na(df.xy[[i]][,j]))-1)
-    x <- df.xy[[i]][min:max,j]
-    suppressWarnings(df.filter.list[[i]][min:max,j] <- signal::filtfilt(b, x))
-    # suppressWarnings(df.filter.list[[i]][min:max,j] <- signal::filter(b, x))
-    # k <- rev(df.filter.list[[i]][min:max,j])
-    # suppressWarnings(df.filter.list[[i]][min:max,j] <- rev(signal::filter(b, k)))
-    colnames(df.filter.list[[i]])[j] <- colnames(df.xy[[i]])[j]
-    df.filter.list[[i]][min:(min+pad),j] <- NA    # Removes first and last entries (victims of filter)
-    df.filter.list[[i]][(max-pad):max,j] <- NA    # Needs tinkering when butterord() is implemented
-  }
-}
+      for (i in 1:length(df.xy)){
+        if (names(df.xy[i]) == 'x'){
+          b <- signal::butter(2, Wc, type = "low", plane='z')
+        } else if(names(df.xy[i]) == 'y'){
+          b <- signal::butter(2, Wc, type = "low", plane='z')
+        }
+        for (j in 1:ncol(df.xy[[i]])){
+          if (!all(is.na(df.xy[[i]][,j]))){
+            min <- min(which(!is.na(df.xy[[i]][,j]))+1)   #If a new filter is needed pr. segment, put code here
+            max <- max(which(!is.na(df.xy[[i]][,j]))-1)
+            x <- df.xy[[i]][min:max,j]
+            suppressWarnings(df.filter.list[[i]][min:max,j] <- signal::filtfilt(b, x))
+            # suppressWarnings(df.filter.list[[i]][min:max,j] <- signal::filter(b, x))
+            # k <- rev(df.filter.list[[i]][min:max,j])
+            # suppressWarnings(df.filter.list[[i]][min:max,j] <- rev(signal::filter(b, k)))
+            colnames(df.filter.list[[i]])[j] <- colnames(df.xy[[i]])[j]
+          } else {
+            df.filter.list[[i]][j] <- NA
+            colnames(df.filter.list[[i]])[j] <- colnames(df.xy[[i]])[j]
+          }
+        }
+      }
 
-  df.filter <- cbind(df$t, df.filter.list[['x']], df.filter.list[['y']])
-  colnames(df.filter)[1] <- 't'
-
-  }else if(filter=='loess'){
-    for (i in 1:ncol(df)){
-      min <- min(which(!is.na(df[,i])))
-      max <- max(which(!is.na(df[,i])))
-      df[min:max,i] <- zoo::na.spline(df[min:max,i], na.rm=TRUE)
+      df.temp.filter <- cbind(df.temp$t, df.filter.list[['x']], df.filter.list[['y']])
+      colnames(df.temp.filter)[1] <- 't'
+      df.temp.filter <- df.temp.filter[-c(1:nrow(df.pre)),]
+      df.temp.filter <- df.temp.filter[-c(nrow(df.temp.filter)-nrow(df.post)+1:nrow(df.temp.filter)),]
+      df.filter <- rbind(df.filter, df.temp.filter)
     }
+
+  } else if(filter=='loess'){
 
     df.xy <- list()
     df.xy[['x']] <- df[,grep('x', names(df))]
@@ -111,7 +141,7 @@ for (i in 1:length(df.xy)){
     colnames(df.filter.list[['x']])[1] <- colnames(df)[1]
     colnames(df.filter.list[['y']])[1] <- colnames(df)[1]
 
-    cons=.07
+    cons=.06
 
     for (i in 1:length(df.xy)){
       for (j in 1:ncol(df.xy[[i]])){
@@ -125,12 +155,8 @@ for (i in 1:length(df.xy)){
 
     df.filter <- cbind(df$t, df.filter.list[['x']], df.filter.list[['y']])
     colnames(df.filter)[1] <- 't'
+
   }else if(filter=='spline'){
-    for (i in 1:ncol(df)){
-      min <- min(which(!is.na(df[,i])))
-      max <- max(which(!is.na(df[,i])))
-      df[min:max,i] <- zoo::na.spline(df[min:max,i], na.rm=TRUE)
-    }
 
     df.xy <- list()
     df.xy[['x']] <- df[,grep('x', names(df))]
@@ -141,7 +167,7 @@ for (i in 1:length(df.xy)){
     colnames(df.filter.list[['x']])[1] <- colnames(df)[1]
     colnames(df.filter.list[['y']])[1] <- colnames(df)[1]
 
-    cons = 0.25
+    cons = 0.1
 
     for (i in 1:length(df.xy)){
       for (j in 1:ncol(df.xy[[i]])){
@@ -200,12 +226,13 @@ for (i in 1:length(df.xy)){
       for (j in min:max){
         angle.rad  <- atan2(df.filter[[j,y.arm]] - df.filter[[j,y.vertex]], df.filter[[j,x.arm]] - df.filter[[j,x.vertex]]) -
                       atan2(df.filter[[j,y.base]] - df.filter[[j,y.vertex]], df.filter[[j,x.base]] - df.filter[[j,x.vertex]])
-        if (angle.rad<0){
-          df.angles[j,joint]  <- rad2deg(angle.rad)+360
+        angle.deg <- rad2deg(angle.rad)
+        if (angle.deg<1){
+          df.angles[j,joint]  <- angle.deg+360
         # # } else if (angle.rad>180){
         # #   df.filter[j,joint]  <- angle.rad-90
          } else {
-          df.angles[j,joint]  <- rad2deg(angle.rad)
+          df.angles[j,joint]  <- angle.deg
         }
       }
     }
@@ -282,9 +309,14 @@ for (i in 1:length(df.xy)){
     }
   }
 
-df.filter <- df.filter %>%
-  mutate(td = if_else(phase != lag(phase) & phase=="support", TRUE, FALSE),
-         to = if_else(phase != lag(phase) & phase=="flight", TRUE, FALSE))
+  if (filter=='butter'){
+    df.filter$phase[nrow(df.filter)] <- "support"
+  }
+
+
+  df.filter <- df.filter %>%
+    mutate(td = if_else(phase != lag(phase) & phase=="support", TRUE, FALSE),
+           to = if_else(phase != lag(phase) & phase=="flight", TRUE, FALSE))
 
   # # Round off - NEEDS UPDATING! ----
   # df <- na.exclude(df)
