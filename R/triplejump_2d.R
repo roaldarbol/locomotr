@@ -5,14 +5,9 @@
 #' @param path Path to input folder
 #' @param joints List of joints to be analyzed (begin with capital letter).
 #' @export
-triplejump_2d <- function(path = NULL, filter='butter'){
+triplejump_2d <- function(filter='butter', input=NULL){
 
-  if (!is.null(path)){
-    act.path <- getwd()
-    setwd(path)
-  }
-
-  res <- kinematics_2d(filter=filter)
+  res <- kinematics_2d(filter=filter, input = input)
 
   df.filter <- as.data.frame(res[[1]])
   df.melt <- as.data.frame(res[[2]])

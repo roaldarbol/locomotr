@@ -13,13 +13,22 @@
 #' @importFrom data.table 'as.data.table'
 #' @importFrom zoo 'na.locf' 'na.spline'
 #' @importFrom signal 'butter' 'filtfilt'
-kinematics_2d <- function(filter='butter'){
+kinematics_2d <- function(filter='butter', input=NULL){
   #path = "/Users/roaldarbol/Library/Mobile Documents/com~apple~CloudDocs/Documents/SportsMechanics/Jannick/practice"
   #segments = c('Head', 'Shoulder', 'Ankle', 'Knee', 'Hip')
   #joints = c("Ankle", "Knee", "Hip")
 
-  df <- as.data.frame(lapply(Sys.glob("data/*.xlsx"), readxl::read_excel))
-  setup <- yaml::yaml.load_file(Sys.glob('data/setup*.yaml'))
+
+  if (!length(input) == 3) {
+    df <- as.data.frame(lapply(Sys.glob("data/*.xlsx"), readxl::read_excel))
+    setup <- yaml::yaml.load_file(Sys.glob('data/setup*.yaml'))
+    comments <- yaml::yaml.load_file(Sys.glob('data/comments*.yaml'))
+  } else {
+    df <- input[1]
+    setup <- input[2]
+    comments <- input[3]
+  }
+
 
   for (i in 1:ncol(df)){
     if (!all(is.na(df[,i]))){
