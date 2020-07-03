@@ -20,13 +20,13 @@ kinematics_2d <- function(filter='butter', input=NULL){
 
 
   if (!length(input) == 3) {
-    df <- as.data.frame(lapply(Sys.glob("data/*.xlsx"), readxl::read_excel))
+    data <- data.frame(readxl::read_excel(Sys.glob('data/*.xlsx')))
     setup <- yaml::yaml.load_file(Sys.glob('data/setup*.yaml'))
     comments <- yaml::yaml.load_file(Sys.glob('data/comments*.yaml'))
   } else {
-    df <- input[1]
-    setup <- input[2]
-    comments <- input[3]
+    df <- input[[1]]
+    setup <- input[[2]]
+    comments <- input[[3]]
   }
 
 

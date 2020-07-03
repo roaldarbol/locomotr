@@ -4,7 +4,7 @@
 \alias{triplejump_2d}
 \title{2D Triple Jump Analysis}
 \usage{
-triplejump_2d(path = NULL, filter = "butter")
+triplejump_2d(filter = "butter", input = NULL)
 }
 \arguments{
 \item{path}{Path to input folder}
