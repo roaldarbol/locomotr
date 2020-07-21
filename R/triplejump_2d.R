@@ -38,6 +38,18 @@ triplejump_2d <- function(filter='butter', input=NULL){
 
   kpi.results <- cbind(kpi.results, df.temp)
 
+  # CoM Lowering
+  df.temp <- df.filter %>%
+    filter(td == TRUE) %>%
+    transmute(com.lower = lead(pos.y.com) - pos.y.com)
+  if (filter=='butter'){
+    df.temp[nrow(df.temp)+1,] <- NA
+  } else {
+    df.temp[nrow(df.temp),] <- NA
+  }
+
+  kpi.results <- cbind(kpi.results, df.temp)
+
   # Foot velocity ----
   df.temp <- df.filter %>%
     filter(lead(td) == TRUE) %>%
@@ -96,11 +108,14 @@ triplejump_2d <- function(filter='butter', input=NULL){
       distance[i] <- df.temp$pos.x.ankle.l[i+1]-df.temp$pos.x.ankle.r[i]
     } else if(df.phase$foot[i] == 'l' & df.phase$foot[i+1] == 'r'){
       distance[i] <- df.temp$pos.x.ankle.r[i+1]-df.temp$pos.x.ankle.l[i]
-    } else if(df.phase$foot[i] == 'r' & df.phase$foot[i+1] == 'both'){
-      distance[i] <- df.temp$pos.x.ankle.r[i+1]-df.temp$pos.x.ankle.r[i]
-    } else if(df.phase$foot[i] == 'l' & df.phase$foot[i+1] == 'both'){
-      distance[i] <- df.temp$pos.x.ankle.r[i+1]-df.temp$pos.x.ankle.l[i]
+    } else if(df.phase$foot[i+1] == 'both'){
+      distance[i] <- res[[3]]$profile$distance - sum(distance[i-1], distance[i-2])
     }
+    # } else if(df.phase$foot[i] == 'r' & df.phase$foot[i+1] == 'both'){
+    #   distance[i] <- df.temp$pos.x.ankle.r[i+1]-df.temp$pos.x.ankle.r[i]-0.20 #20cm app. foot length - needs precision
+    # } else if(df.phase$foot[i] == 'l' & df.phase$foot[i+1] == 'both'){
+    #   distance[i] <- df.temp$pos.x.ankle.r[i+1]-df.temp$pos.x.ankle.l[i]-0.20 #20cm app. foot length - needs precision
+    # }
   }
   distance <- as.data.frame(distance)
   distance[nrow(distance),] <- NA
@@ -291,6 +306,15 @@ triplejump_2d <- function(filter='butter', input=NULL){
 
   # Landing analysis
   df.temp <- df.filter %>%
+    filter((floor(t * 1000) / 1000) == setup$phase$touchdown[[length(setup$phase$touchdown)]])
+
+  landing.distance <- df.temp$pos.x.ankle.r - df.temp$pos.x.com
+  if(is.na(landing.distance)){
+    landing.distance <- NA
+  }
+
+
+  df.temp <- df.filter %>%
     subset(t %inrange% c(df.phase[nrow(df.phase)-1,'touchdown'], df.phase[nrow(df.phase),'touchdown']))
   if (setup$phase$foot[length(setup$phase$foot)-1] == 'r'){
     level <- df.temp %>%
@@ -328,7 +352,7 @@ triplejump_2d <- function(filter='butter', input=NULL){
   foot.shortest <- colnames(actual.range[which.min(actual.range[nrow(actual.range),])])
   foot.shortest <- paste0('pos.theta.knee.', stringr::str_sub(foot.shortest, -1))
   actual.range <- min(actual.range[nrow(actual.range),])
-  landing.distance <- actual.range - range
+  landing.distance.new <- actual.range - range
 
   landing.kin <- df.filter %>%
     filter(td == TRUE) %>%
@@ -347,8 +371,10 @@ triplejump_2d <- function(filter='butter', input=NULL){
     landing.kin <- landing.kin[nrow(landing.kin),]
   }
   landing.distance <- round(landing.distance, digits = 2)
+  landing.distance.new <- round(landing.distance.new, digits = 2)
   landing.analysis <- list()
   landing.analysis$landing.distance <- landing.distance
+  landing.analysis$landing.distance.new <- landing.distance.new
   landing.analysis$landing.kin <- landing.kin
 
   # Return ----
