@@ -5,7 +5,7 @@
 #' @param path Path to input folder
 #' @param joints List of joints to be analyzed (begin with capital letter).
 #' @export
-triplejump_2d <- function(filter='butter', input=NULL){
+triplejump_2d <- function(filter='spline', input=NULL){
 
   res <- kinematics_2d(filter=filter, input = input)
 

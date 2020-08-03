@@ -6,7 +6,7 @@
 #' @param joints List of joints to be analyzed (begin with capital letter).
 #' @export
 #' @import dplyr
-longjump_2d <- function(filter='butter', input=NULL){
+longjump_2d <- function(filter='spline', input=NULL){
 
   res <- kinematics_2d(filter=filter, input = input)
 
@@ -34,10 +34,23 @@ longjump_2d <- function(filter='butter', input=NULL){
   if (filter=='butter'){
     df.temp[nrow(df.temp)+1,] <- NA
   } else {
+    df.temp[nrow(df.temp)+1,] <- NA
+  }
+
+  kpi.results <- cbind(kpi.results, df.temp)
+
+  # CoM Lowering
+  df.temp <- df.filter %>%
+    filter(td == TRUE) %>%
+    transmute(com.lower = lead(pos.y.com) - pos.y.com)
+  if (filter=='butter'){
+    df.temp[nrow(df.temp)+1,] <- NA
+  } else {
     df.temp[nrow(df.temp),] <- NA
   }
 
   kpi.results <- cbind(kpi.results, df.temp)
+
 
   # Foot velocity ----
   df.temp <- df.filter %>%
@@ -75,6 +88,30 @@ longjump_2d <- function(filter='butter', input=NULL){
   foot.hor.vel.rel[nrow(foot.hor.vel.rel),] <- NA
   kpi.results <- cbind(kpi.results, foot.hor.vel, foot.hor.vel.rel)
 
+  # Distribution of phase distances - NEEDS TO SUBT. FOOT LENGTH ----
+  df.temp <- df.filter %>%
+    filter(td == TRUE)
+  distance <- vector()
+  for (i in 1:nrow(df.temp)){
+    if(df.phase$foot[i] == 'both'){
+      distance[i] <- NA
+    } else if(df.phase$foot[i] == 'r' & df.phase$foot[i+1] == 'l'){
+      distance[i] <- df.temp$pos.x.ankle.l[i+1]-df.temp$pos.x.ankle.r[i]
+    } else if(df.phase$foot[i] == 'l' & df.phase$foot[i+1] == 'r'){
+      distance[i] <- df.temp$pos.x.ankle.r[i+1]-df.temp$pos.x.ankle.l[i]
+    } else if(df.phase$foot[i+1] == 'both'){
+      distance[i] <- res[[3]]$profile$distance
+    }
+    # } else if(df.phase$foot[i] == 'r' & df.phase$foot[i+1] == 'both'){
+    #   distance[i] <- df.temp$pos.x.ankle.r[i+1]-df.temp$pos.x.ankle.r[i]-0.20 #20cm app. foot length - needs precision
+    # } else if(df.phase$foot[i] == 'l' & df.phase$foot[i+1] == 'both'){
+    #   distance[i] <- df.temp$pos.x.ankle.r[i+1]-df.temp$pos.x.ankle.l[i]-0.20 #20cm app. foot length - needs precision
+    # }
+  }
+  distance <- as.data.frame(distance)
+  distance[nrow(distance),] <- NA
+  kpi.results <- cbind(kpi.results, distance)
+
   # Horizontal velocity change - WAIT UNTIL 2LS and LS IS INCORPORATED ----
   # df.temp <- df.filter %>%
   #   filter(td == TRUE | to == TRUE) %>%
@@ -106,7 +143,11 @@ longjump_2d <- function(filter='butter', input=NULL){
   df.temp <- df.filter %>%
     filter(to == TRUE) %>%
     transmute(to.trunk.angle = -1*(rad2deg(atan2(pos.y.head-pos.y.hip, pos.x.head-pos.x.hip))-90))
-  df.temp[nrow(df.temp),] <- NA
+  if (nrow(df.temp)==5){
+    df.temp[nrow(df.temp),] <- NA
+  } else if (nrow(df.temp)==4){
+    df.temp[nrow(df.temp)+1,] <- NA
+  } else {warning('Wrong number of indices')}
   kpi.results <- cbind(kpi.results, df.temp)
 
   # Inclination angle ----
@@ -148,7 +189,11 @@ longjump_2d <- function(filter='butter', input=NULL){
     }
   }
   to.inc.angle <- as.data.frame(to.inc.angle)
-  to.inc.angle[nrow(to.inc.angle),] <- NA
+  if (nrow(to.inc.angle)==5){
+    to.inc.angle[nrow(to.inc.angle),] <- NA
+  } else if (nrow(to.inc.angle)==4){
+    to.inc.angle[nrow(to.inc.angle)+1,] <- NA
+  }
   kpi.results <- cbind(kpi.results, to.inc.angle)
 
   # Minimal knee angle ----
@@ -246,6 +291,15 @@ longjump_2d <- function(filter='butter', input=NULL){
 
   # Landing analysis
   df.temp <- df.filter %>%
+    filter((floor(t * 1000) / 1000) == setup$phase$touchdown[[length(setup$phase$touchdown)]])
+
+  landing.distance <- df.temp$pos.x.ankle.r - df.temp$pos.x.com
+  if(is.na(landing.distance)){
+    landing.distance <- NA
+  }
+
+
+  df.temp <- df.filter %>%
     subset(t %inrange% c(df.phase[nrow(df.phase)-1,'touchdown'], df.phase[nrow(df.phase),'touchdown']))
   if (setup$phase$foot[length(setup$phase$foot)-1] == 'r'){
     level <- df.temp %>%
@@ -283,7 +337,7 @@ longjump_2d <- function(filter='butter', input=NULL){
   foot.shortest <- colnames(actual.range[which.min(actual.range[nrow(actual.range),])])
   foot.shortest <- paste0('pos.theta.knee.', stringr::str_sub(foot.shortest, -1))
   actual.range <- min(actual.range[nrow(actual.range),])
-  landing.distance <- actual.range - range
+  landing.distance.new <- actual.range - range
 
   landing.kin <- df.filter %>%
     filter(td == TRUE) %>%
@@ -302,8 +356,10 @@ longjump_2d <- function(filter='butter', input=NULL){
     landing.kin <- landing.kin[nrow(landing.kin),]
   }
   landing.distance <- round(landing.distance, digits = 2)
+  landing.distance.new <- round(landing.distance.new, digits = 2)
   landing.analysis <- list()
   landing.analysis$landing.distance <- landing.distance
+  landing.analysis$landing.distance.new <- landing.distance.new
   landing.analysis$landing.kin <- landing.kin
 
   # Return ----

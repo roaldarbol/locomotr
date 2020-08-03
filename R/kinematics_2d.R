@@ -13,7 +13,7 @@
 #' @importFrom data.table 'as.data.table'
 #' @importFrom zoo 'na.locf' 'na.spline'
 #' @importFrom signal 'butter' 'filtfilt'
-kinematics_2d <- function(filter='butter', input=NULL){
+kinematics_2d <- function(filter='spline', input=NULL){
 
   if (!length(input) == 3) {
     df <- data.frame(readxl::read_excel(Sys.glob('data/*.xlsx')))
