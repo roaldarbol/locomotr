@@ -1,3 +1,4 @@
+/Users/roaldarbol/Documents/blog/.gitignore="927B0233"
 /Users/roaldarbol/Documents/r/biomechanics/DESCRIPTION="64C867A"
 /Users/roaldarbol/Documents/r/biomechanics/NAMESPACE="A932BF22"
 /Users/roaldarbol/Documents/r/biomechanics/R/angular_kinematics.R="3BE3684"
@@ -5,5 +6,7 @@
 /Users/roaldarbol/Documents/r/biomechanics/R/kinematics_2d.R="9F050118"
 /Users/roaldarbol/Documents/r/biomechanics/R/linear_kinematics.R="62491DBB"
 /Users/roaldarbol/Documents/r/biomechanics/R/longjump_2d.R="B967110E"
+/Users/roaldarbol/Documents/r/biomechanics/R/performance_indicators.R="2DB87041"
 /Users/roaldarbol/Documents/r/biomechanics/R/triplejump_2d.R="D667D2BB"
+/Users/roaldarbol/Documents/r/biomechanics/man/rad2deg.Rd="6B06919E"
 /Users/roaldarbol/Downloads/unicode-math/unicode-math-table.tex="4E6EE3D8"

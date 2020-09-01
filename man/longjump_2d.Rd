@@ -4,7 +4,7 @@
 \alias{longjump_2d}
 \title{2D Long Jump Analysis}
 \usage{
-longjump_2d(filter = "butter", input = NULL)
+longjump_2d(filter = "spline", input = NULL)
 }
 \arguments{
 \item{path}{Path to input folder}
