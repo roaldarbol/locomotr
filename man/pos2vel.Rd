@@ -7,9 +7,13 @@
 pos2vel(x1, x2, t1, t2)
 }
 \arguments{
-\item{x}{The two positions.}
+\item{x1}{The two positions.}
 
-\item{t}{The two time points.}
+\item{x2}{Bla}
+
+\item{t1}{The two time points.}
+
+\item{t2}{Bla}
 }
 \description{
 The basic linear velocity handle. Takes two positions and time points as input.

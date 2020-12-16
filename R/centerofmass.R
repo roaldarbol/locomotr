@@ -4,9 +4,10 @@
 #'
 #' @param data Data file
 #' @param setup A setup file.
+#' @importFrom stats 'complete.cases'
 #' @export
 
-centerofmass <- function(data = df.filter, setup = setup){
+centerofmass <- function(data, setup = setup){
   segment.com <- data.frame(tibble(.rows = nrow(data)))
                             for (i in 1:length(setup$skeleton$segments)){
                               name.x <- paste0('pos.x.', names(setup$skeleton$segments[i]))
@@ -29,7 +30,7 @@ centerofmass <- function(data = df.filter, setup = setup){
                             }
 
                             # Calculate wholebody CoM x and y seperately
-                            segment.com[!complete.cases(segment.com), ] <- NA
+                            segment.com[!stats::complete.cases(segment.com), ] <- NA
                             x <- which(grepl('x', names(segment.com)))
                             y <- which(grepl('y', names(segment.com)))
                             segment.com.x <- segment.com[,x]

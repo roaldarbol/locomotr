@@ -4,10 +4,14 @@
 \alias{disp_com}
 \title{CoM lowering}
 \usage{
-disp_com(data, results)
+disp_com(data, results, timing = c("td", "to"))
 }
 \arguments{
 \item{data}{Data containing timings of touchdown and take-off}
+
+\item{results}{A results file of correct number of columns}
+
+\item{timing}{Specifies 'td' or 'to'}
 }
 \description{
 Displacement

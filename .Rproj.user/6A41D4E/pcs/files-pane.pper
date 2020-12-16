@@ -1,9 +1,9 @@
 {
-    "path" : "~/Documents/r/biomechanics/R",
-    "sortOrder" : [
+    "path": "~/Documents/r/trackr/R",
+    "sortOrder": [
         {
-            "ascending" : true,
-            "columnIndex" : 2
+            "columnIndex": 2,
+            "ascending": true
         }
     ]
 }

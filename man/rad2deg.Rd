@@ -6,6 +6,9 @@
 \usage{
 rad2deg(ang)
 }
+\arguments{
+\item{ang}{Angle in radians}
+}
 \description{
 Changes between radians and degrees
 }

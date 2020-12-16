@@ -4,10 +4,14 @@
 \alias{velocity}
 \title{Horizontal and vertical velocity (and take-off angle)}
 \usage{
-velocity(data, results, timing)
+velocity(data, results, timing = c("td", "to"))
 }
 \arguments{
 \item{data}{Data containing timings of touchdown and take-off}
+
+\item{results}{A results file of correct number of columns}
+
+\item{timing}{Specifies 'td' or 'to'}
 }
 \description{
 Get contact and flight times

@@ -1,6 +1,6 @@
-Package: biomechanics
-Title: Package for sports-specific biomechanical analysis
-Version: 0.0.1
+Package: locomotr
+Title: Package for track and field biomechanical analysis
+Version: 0.1.0
 Authors@R: 
     person(given = "Mikkel",
            family = "Roald-Arbøl",
@@ -8,8 +8,15 @@ Authors@R:
            email = "mikkel_roald@hotmail.com",
            comment = c(ORCID = "YOUR-ORCID-ID"))
 Description: What the package does (one paragraph).
-License: What license it uses
+License: file LICENSE
 Encoding: UTF-8
-Depends: signal, data.table, ggplot2, plotly, readxl, reshape2, yaml, zoo, dplyr
+Depends: R (>= 3.5.0)
+Imports: signal, zoo, data.table, stringr, reshape2, dplyr
 LazyData: true
 RoxygenNote: 7.1.1
+Suggests: 
+    knitr,
+    rmarkdown,
+    testthat,
+    covr
+VignetteBuilder: knitr

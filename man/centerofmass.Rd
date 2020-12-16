@@ -4,7 +4,7 @@
 \alias{centerofmass}
 \title{Calculate center of mass}
 \usage{
-centerofmass(data = df.filter, setup = setup)
+centerofmass(data, setup = setup)
 }
 \arguments{
 \item{data}{Data file}

@@ -4,16 +4,18 @@
 \alias{kinematics_2d}
 \title{Kinematics}
 \usage{
-kinematics_2d(filter = "spline", input = NULL)
+kinematics_2d(input, filt = "spline")
 }
 \arguments{
-\item{path}{Path to input folder}
+\item{input}{List containing at least data and setup}
 
-\item{joints}{List of joints to be analyzed (begin with capital letter).}
+\item{filt}{Filter to be used}
 }
 \description{
 Computes velocities etc.
 }
 \details{
-This function outputs the desired results and graphs for a 2D analysis of triple jump
+This function filters data, computes angles, and velocities,
+acceleration (both linear and angular), touchdown/takeoff,
+and melts data for easy plotting.
 }
