@@ -1,0 +1,31 @@
+---
+title: "Discus Report"
+author: "roaldarbol"
+date: "1/23/2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+Discus Throw Performance Analysis
+Keywords: 
+PBP = Peak backswing position (beginning of throw) 
+RFO = Right foot take-off 
+LFO = Left foot take-off 
+RFD = Right foot touch-down 
+LFD = left foot touch-down 
+F = Release 
+
+```{r}
+phases <- tibble::tribble(
+  ~"Key phase", ~"Definition",
+  "Preparation", "From PBP to RFO.",
+  "Entry", "From RFO to LFO.",
+  "Airborne", "From LFO to RFD.",
+  "Delivery / Power", "From LFD to release"
+)
+knitr::kable(phases, booktabs=TRUE)
+
+```

@@ -32,28 +32,28 @@ jump_2d <- function(input, event=c('long', 'triple'), filt='spline'){
   dist <- res[[3]]$profile$distance
 
   # Important measures - MAKE SURE TO FIND THE RIGHT TAKEOFF INSTANT!!!:
-  timing <- times(df.phase) # Duration on ground and flight
-  velocities <- velocity(df.filter, results, 'to') # Velocity and take-off angle
-  disp.com <- disp_com(df.filter, results, 'td') # CoM Lowering
-  foot.vel.abs <- segment_vel(df.filter, df.phase, 'ankle', 'abs', 'x') # Absolute foot velocity
-  foot.vel.rel <- segment_vel(df.filter, df.phase, 'ankle', 'rel', 'x') # Relative foot velocity
+  timing <- jump_times(df.phase) # Duration on ground and flight
+  velocities <- jump_velocity(df.filter, results, 'to') # Velocity and take-off angle
+  disp.com <- jump_disp_com(df.filter, results, 'td') # CoM Lowering
+  foot.vel.abs <- jump_segment_vel(df.filter, df.phase, 'ankle', 'abs', 'x') # Absolute foot velocity
+  foot.vel.rel <- jump_segment_vel(df.filter, df.phase, 'ankle', 'rel', 'x') # Relative foot velocity
   names(foot.vel.abs) <- 'foot.vel.abs'
   names(foot.vel.rel) <- 'foot.vel.rel'
-  step.length <- step_length(df.filter, df.phase, dist, 'abs') # Absolute step length
+  step.length <- jump_step_length(df.filter, df.phase, dist, 'abs') # Absolute step length
 
   # Knee angles at TD, min and TO ----
-  td.knee <- joint_angle(df.filter, df.phase, 'td', 'knee')
-  min.knee <- joint_angle(df.filter, df.phase, 'min', 'knee')
-  to.knee <- joint_angle(df.filter, df.phase, 'to', 'knee')
+  td.knee <- jump_joint_angle(df.filter, df.phase, 'td', 'knee')
+  min.knee <- jump_joint_angle(df.filter, df.phase, 'min', 'knee')
+  to.knee <- jump_joint_angle(df.filter, df.phase, 'to', 'knee')
 
   # Relative angles - trunk, inclination, thigh at TD and TO
-  td.trunk <- rel_angle(df.filter, df.phase, 'trunk', 'td')
-  to.trunk <- rel_angle(df.filter, df.phase, 'trunk', 'to')
-  td.inc <- rel_angle(df.filter, df.phase, 'inc', 'td')
-  to.inc <- rel_angle(df.filter, df.phase, 'inc', 'to')
-  td.thigh <- rel_angle(df.filter, df.phase, 'thigh', 'td')
-  to.thigh <- rel_angle(df.filter, df.phase, 'thigh', 'to')
-  hip.angvel <- joint_vel(df.filter, df.phase, 'hip') # Hip angular velocity
+  td.trunk <- jump_rel_angle(df.filter, df.phase, 'trunk', 'td')
+  to.trunk <- jump_rel_angle(df.filter, df.phase, 'trunk', 'to')
+  td.inc <- jump_rel_angle(df.filter, df.phase, 'inc', 'td')
+  to.inc <- jump_rel_angle(df.filter, df.phase, 'inc', 'to')
+  td.thigh <- jump_rel_angle(df.filter, df.phase, 'thigh', 'td')
+  to.thigh <- jump_rel_angle(df.filter, df.phase, 'thigh', 'to')
+  hip.angvel <- jump_joint_vel(df.filter, df.phase, 'hip') # Hip angular velocity
 
   # Bind results ----
   results <- cbind(results,
@@ -75,7 +75,7 @@ jump_2d <- function(input, event=c('long', 'triple'), filt='spline'){
                    hip.angvel)
 
   if (event == 'triple'){
-    phase.ratio <- step_length(df.filter, df.phase, dist, 'rel') # Phase ratio
+    phase.ratio <- jump_step_length(df.filter, df.phase, dist, 'rel') # Phase ratio
     results <- cbind(results, phase.ratio)
   }
 
@@ -84,7 +84,7 @@ jump_2d <- function(input, event=c('long', 'triple'), filt='spline'){
     mutate_if(is.numeric, round, 2)
 
   # Landing analysis
-  landing.analysis <- landing_analysis(df.filter, df.phase)
+  landing.analysis <- jump_landing_analysis(df.filter, df.phase)
 
   # Return ----
   report <- list(results, df.filter, df.melt, df.phase, setup, landing.analysis, matrixNA)

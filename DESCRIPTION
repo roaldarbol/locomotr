@@ -1,19 +1,19 @@
 Package: locomotr
-Title: Package for track and field biomechanical analysis
+Title: Package for track and field biomechanical analysis.
 Version: 0.1.0
 Authors@R: 
     person(given = "Mikkel",
            family = "Roald-Arbøl",
            role = c("aut", "cre"),
-           email = "mikkel_roald@hotmail.com",
-           comment = c(ORCID = "YOUR-ORCID-ID"))
+           email = "mikkel@roald-arboel.com",
+           comment = c(ORCID = "0000-0002-9998-0058"))
 Description: What the package does (one paragraph).
 License: file LICENSE
 Encoding: UTF-8
 Depends: R (>= 3.5.0)
 Imports: signal, zoo, data.table, stringr, reshape2, dplyr
 LazyData: true
-RoxygenNote: 7.1.1
+RoxygenNote: 7.1.2
 Suggests: 
     knitr,
     rmarkdown,

@@ -1,4 +1,4 @@
 library(testthat)
-library(trackr)
+library(locomotr)
 
-test_check("trackr")
+test_check("locomotr")

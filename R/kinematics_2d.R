@@ -11,7 +11,6 @@
 #' @export
 #' @import dplyr
 #' @importFrom reshape2 melt
-#' @importFrom data.table 'as.data.table'
 #' @importFrom zoo 'na.locf' 'na.spline'
 #' @importFrom stats 'na.exclude'
 kinematics_2d <- function(input, filt='spline'){
