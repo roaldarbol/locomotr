@@ -1,8 +1,8 @@
 .Rproj.user
-.Rhistory
+*.Rhistory
 .Rdata
-.httr-oauth
-.DS_Store
-.Ruserdata
+*.httr-oauth
+*.DS_Store
+*.Ruserdata
 inst/doc
 playground.R
